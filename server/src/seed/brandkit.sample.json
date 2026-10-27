@@ -1,0 +1,17 @@
+{
+  "name": "Northstar Studio",
+  "toneProfile": "Clear, optimistic, and helpful. Sound confident without making absolute promises. Avoid fear-based language and medical claims.",
+  "facts": [
+    {"id":"fact-1","text":"Northstar Daily Moisture is designed to support skin hydration.","effectiveDate":"2026-01-01"},
+    {"id":"fact-2","text":"The product is available in a 50 ml bottle.","effectiveDate":"2026-01-01"},
+    {"id":"fact-3","text":"The product launched in 2024.","effectiveDate":"2024-03-01"}
+  ],
+  "bannedTerms": [
+    {"id":"ban-1","term":"100% guaranteed","reason":"Absolute guarantees are not approved."},
+    {"id":"ban-2","term":"cure","reason":"Medical outcome claims are not approved."},
+    {"id":"ban-3","term":"miracle","reason":"Avoid exaggerated product claims."}
+  ],
+  "preferredTerms": [{"id":"pref-1","term":"cheap","replacement":"great value"}],
+  "disclaimers": ["Terms and conditions apply."],
+  "version": 1
+}

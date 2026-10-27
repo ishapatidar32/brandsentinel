@@ -1,0 +1,15 @@
+import express from 'express';
+import cors from 'cors';
+import { env } from './config/env.js';
+import api from './routes/api.js';
+import { notFound,errorHandler } from './middleware/errors.js';
+import { seedDemo } from './data/store.js';
+const app=express();
+app.use(cors({origin:env.clientOrigin.split(',').map(x=>x.trim()),credentials:false}));
+app.use(express.json({limit:'1mb'}));
+app.get('/',(req,res)=>res.json({name:'BrandSentinel API',health:'/api/health'}));
+app.use('/api',api);
+app.use(notFound);
+app.use(errorHandler);
+seedDemo();
+app.listen(env.port,()=>console.log(`BrandSentinel API listening on http://localhost:${env.port}`));
