@@ -1,4 +1,4 @@
-import BrandKit from '../models/BrandKit.js';
+import BrandKit from '../models/Brandkit.js';
 import BrandChunk from '../models/BrandChunk.js';
 import { embedTexts } from './ingestion/embedder.js';
 
