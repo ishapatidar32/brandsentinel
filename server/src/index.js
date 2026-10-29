@@ -6,6 +6,11 @@ import { apiLimiter } from './middleware/rateLimit.js';
 import { notFound, errorHandler } from './middleware/errorHandler.js';
 import authRoutes from './routes/auth.routes.js';
 import brandkitRoutes from './routes/brandkit.routes.js';
+import workflowRoutes from './routes/workflow.routes.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+import { ensureDemoData } from './seed/autoSeed.js';
 
 const app = express();
 
@@ -23,19 +28,21 @@ app.use('/api', authRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api', brandkitRoutes);
 app.use('/api/brandkit', brandkitRoutes);
+app.use('/api', workflowRoutes);
 
 // Error handlers
 app.use(notFound);
 app.use(errorHandler);
 
-try {
-  await mongoose.connect(env.mongoUri);
-  console.log('Mongo connected');
-} catch (err) {
-  console.error('Mongo error:', err.message);
-  process.exit(1);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const clientDist = path.resolve(__dirname, '../../client/dist');
+if (fs.existsSync(clientDist)) {
+  app.use(express.static(clientDist));
+  app.get('*splat', (req,res,next) => req.path.startsWith('/api') ? next() : res.sendFile(path.join(clientDist,'index.html')));
 }
 
-app.listen(env.port, () => console.log(`API on :${env.port}`));
+try { await mongoose.connect(env.mongoUri); console.log('Mongo connected'); await ensureDemoData(); }
+catch (err) { console.error('Mongo error:', err.message); process.exit(1); }
+app.listen(env.port, '0.0.0.0', () => console.log(`BrandSentinel listening on :${env.port}`));
 
 export default app;

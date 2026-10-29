@@ -21,7 +21,7 @@ export const createUserSchema = registerSchema.omit({ orgId: true }).extend({
 });
 
 const signToken = (user) =>
-  jwt.sign({ id: user._id, role: user.role, orgId: user.orgId }, env.jwtSecret, {
+  jwt.sign({ id: user._id, name: user.name, email: user.email, role: user.role, orgId: user.orgId }, env.jwtSecret, {
     expiresIn: env.jwtExpires,
   });
 

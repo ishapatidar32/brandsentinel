@@ -13,3 +13,5 @@ r.get(['/auth/me', '/me'], authenticate, c.me);
 
 r.get('/users', authenticate, requireRole('admin'), c.listUsers);
 r.post('/users', authenticate, requireRole('admin'), validate(c.createUserSchema), c.createUser);
+
+export default r;

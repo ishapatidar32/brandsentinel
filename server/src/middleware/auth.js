@@ -8,7 +8,7 @@ export const authenticate = (req, res, next) => {
 
   try {
     const payload = jwt.verify(token, env.jwtSecret);
-    req.user = { id: payload.id, role: payload.role, orgId: payload.orgId };
+    req.user = { id: payload.id, name: payload.name, email: payload.email, role: payload.role, orgId: payload.orgId };
     next();
   } catch {
     res.status(401).json({ error: 'Invalid or expired token' });

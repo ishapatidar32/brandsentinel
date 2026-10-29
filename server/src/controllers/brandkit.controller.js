@@ -122,3 +122,22 @@ export const getChunk = async (req, res, next) => {
     next(err);
   }
 };
+
+export const updateBrandKit = async (req, res, next) => {
+  try {
+    const raw = req.body.brandKit || req.body;
+    const body = { ...raw, tone: raw.toneProfile || raw.tone || 'Clear, helpful and evidence-led', terms: [...(raw.bannedTerms || []).map(t => ({term:t.term,type:'banned',suggest:t.reason})), ...(raw.preferredTerms || []).map(t => ({term:t.term,type:'preferred',suggest:t.replacement}))], disclaimers: (raw.disclaimers || []).map(d => typeof d === 'string' ? ({text:d,appliesTo:[]}) : d), rules: raw.rules || [] };
+    const last = await BrandKit.findOne({ orgId: req.user.orgId }).sort({ version: -1 });
+    req.body = body;
+    const { orgId, id: userId } = req.user;
+    const kit = new BrandKit({ orgId, version: (last?.version || 0) + 1, tone: body.tone || 'Clear, helpful and evidence-led', createdBy: userId, isActive: false });
+    const { chunks, terms, disclaimers } = buildChunks(body, kit._id, orgId);
+    const embeddable = chunks.filter(c => c.kind === 'fact' || c.kind === 'rule');
+    const vectors = await embedTexts(embeddable.map(c => c.text));
+    if (vectors) embeddable.forEach((c,i) => c.embedding = vectors[i]);
+    kit.terms = terms; kit.disclaimers = disclaimers; kit.embeddingModel = vectors ? EMBEDDING_MODEL : null;
+    await kit.save(); await BrandChunk.insertMany(chunks); await BrandKit.updateMany({orgId}, {isActive:false}); await BrandKit.updateOne({_id:kit._id},{isActive:true});
+    const result = { name: raw.name || 'Northstar Studio', toneProfile: kit.tone, tone:kit.tone, terms:kit.terms, bannedTerms:kit.terms.filter(t=>t.type==='banned').map(t=>({term:t.term,reason:t.suggest||''})), preferredTerms:kit.terms.filter(t=>t.type==='preferred').map(t=>({term:t.term,replacement:t.suggest||t.term})), disclaimers:kit.disclaimers.map(d=>d.text), facts:(body.facts||[]), rules:(body.rules||[]), guidelinesText:body.guidelinesText||'' };
+    res.status(200).json({ brandKit: result, kitId:kit._id, version:kit.version, warning:vectors?undefined:'Embeddings unavailable; keyword matching will be used.' });
+  } catch(err) { next(err); }
+};
